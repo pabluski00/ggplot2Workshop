@@ -1,0 +1,149 @@
+---
+title: "stat938-presentation"
+output: pdf_document
+date: "`r Sys.Date()`"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(ggplot2)
+library(HSAUR)
+library(tidyr)
+library(dplyr)
+library(patchwork)
+library(viridis)
+library(hexbin)
+```
+
+```{r}
+data("BtheB", package = "HSAUR")
+```
+
+```{r}
+BtheB <- na.omit(BtheB) %>%
+  mutate(id = row_number())
+
+BtheB_long <- BtheB %>%
+  pivot_longer(cols = starts_with("bdi"), 
+               names_to = "time",
+               values_to = "bdi_value") %>%
+  mutate(time = gsub("bdi.", "", time))
+```
+
+```{r}
+BtheB_long <- BtheB_long %>%
+  mutate(id = as.numeric(as.character(id)))
+
+BtheB_TAU<- BtheB_long %>%
+  filter(treatment == "TAU")
+
+BtheB_long_TAU <- BtheB_TAU %>%
+  mutate(id = factor(id))
+
+p1 <- ggplot(BtheB_long_TAU[1:25,], aes(x = time, y = bdi_value, group = id, color = id)) +
+  geom_line() +
+  labs(title = "Spaghetti Plot of BDI Scores Over Time (TAU)",
+       x = "Time (months)",
+       y = "BDI Score",
+       color = "Patient ID") +
+  scale_color_viridis_d(option = "viridis") + # colour-blind friendly palette
+  annotate("text", x = 2, y = 40, label = "Highest BDI Score", color = "red", size = 4) + # use annotations
+  theme_minimal()
+p1
+```
+
+```{r}
+# save our customizations for re-usability 
+custom_theme <- function() {
+  theme_minimal() +
+  theme(
+      legend.key = element_rect(colour = "grey"),  
+      legend.title = element_text(size = 10, face = "bold"),   
+      legend.text = element_text(size = 8),                   
+      legend.position = "bottom",
+      legend.margin = margin(t = 0, r = 0, b = 0, l = 0),      
+      legend.box.spacing = unit(0.2, "lines")             
+    )
+}
+```
+
+```{r}
+ggplot(BtheB_long_TAU[1:25,], aes(x = time, y = bdi_value, group = id, color = id)) +
+  geom_line() +
+  labs(title = "Spaghetti Plot of BDI Scores Over Time (TAU)",
+       x = "Time (months)",
+       y = "BDI Score",
+       color = "Patient ID") +
+  scale_color_viridis_d(option = "viridis") + # colour-blind friendly palette
+  custom_theme()
+```
+
+Using transparency/jitter
+
+```{r}
+sim_data <- data.frame(
+  x <- rnorm(5000),
+  y <- rnorm(5000)
+)
+```
+
+```{r}
+# Regular plot
+
+ggplot(sim_data, aes(x = x, y = y)) +
+  geom_point() + 
+  labs(title = "Regular (base) scatter plot",
+       x = "X-axis",
+       y = "Y-axis") +
+  theme_minimal()
+```
+
+```{r}
+ggplot(sim_data, aes(x = x, y = y)) +
+  geom_point(alpha = 0.3) + # transparency of 30% 
+  labs(title = "Scatter plot with Transparency",
+       x = "X-axis",
+       y = "Y-axis") +
+   theme_minimal()
+```
+
+```{r}
+ggplot(sim_data, aes(x = x, y = y)) +
+  geom_jitter(width = 0.5, height = 0.5) + # add some jitter
+  labs(title = "Scatter plot with Jitter",
+       x = "X-axis",
+       y = "Y-axis") +
+   theme_minimal()
+```
+
+```{r}
+ggplot(sim_data, aes(x = x, y = y)) +
+  geom_hex() + 
+  labs(title = "Scatter plot with Hexbins",
+       x = "X-axis",
+       y = "Y-axis") +
+   theme_minimal()
+```
+
+```{r}
+ggplot(sim_data, aes(x = x, y = y)) +
+  geom_density2d() +  # contour lines
+  geom_point(alpha = 0.3) + 
+  labs(title = "Scatterplot with contour lines",
+       x = "X-axis",
+       y = "Y-axis") +
+  theme_minimal()
+```
+
+```{r}
+ggplot(sim_data, aes(x = x, y = y)) +
+  geom_density2d() +  # contour lines
+  geom_point(alpha = 0.3) + 
+  labs(title = "Scatterplot with contour lines",
+       x = "X-axis",
+       y = "Y-axis") +
+  theme_minimal()
+```
+
+
+
